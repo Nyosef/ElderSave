@@ -8,7 +8,7 @@
  * Input: Right Button, Left Button, Slide Switch, Accelerometer, Light Sensor
  * Output: NeoPixels in different colors, Tones
  * 
- * Video link:
+ * Video link: https://youtu.be/YYDFkgYiiH0
  * 
  * 
  * Blynk:
@@ -100,6 +100,7 @@ int startIndex;
 String emergencyContact;
 
 
+// DEFINE MIN AND MAX HEARTBEAT HERE
 // Vars indicating at what heartbeat level to enter emergency mode
 bool emergencyMode = 0;
 int minEmergencyHeartbeat = 50;
@@ -251,7 +252,6 @@ if (Blynk.connected()) {
 // Notifying on ativity start
     if(CircuitPlayground.slideSwitch() && startActivity == 1 && emergencyMode == 0){ 
     Serial.println("!!!!!!!!!!!Walk started!!!!!!!!!!!!");
- //   kmToPixels(remainingWalkingDistance);
       activateWheel = true;
       Wheel(activateWheel,colors);
           
@@ -323,8 +323,6 @@ BLYNK_WRITE(V5) {
   longitude = gps.getLon();
   Blynk.virtualWrite(V1, totalWalkingDistance);    // Update total running distance on Blynk
 
-  // Update temperature on first GPS coordinates arrival
-  if (gpsCount == 1) Blynk.virtualWrite(V4, "", "", "", "", "", 0, latitude, longitude); // Send temperature details
   gpsCount++;
 }
 
@@ -337,14 +335,13 @@ BLYNK_WRITE(V7) {
 // Send run data and reset them
 void endOfRun() {
   walkingTime += (millis() - startTime) / 1000; // time in seconds
-  Serial.println(" Time of run ");
+  Serial.println(" Time of Walk");
   Serial.println(walkingTime);
   
   calories = totalSteps * 0.04;
   Blynk.virtualWrite(V1, 0);
   Blynk.virtualWrite(V3, 0);
   Blynk.virtualWrite(V7, 0);
-  //Blynk.virtualWrite(V4, walkingTime, totalWalkingDistance, totalSteps, calories, lastHeartBeat, 0, latitude, longitude); // Send run details
   totalSteps = 0;
   remainingWalkingDistance = 0.0;
   totalWalkingDistance = 0.0;
@@ -355,22 +352,8 @@ void endOfRun() {
 }
 
 
-// Set number of pixels and their colors according to remaining kms to run
-void kmToPixels(double km) {
-  double m = km - floor(km);
-  km = floor(km);
-  CircuitPlayground.clearPixels();
-  for (int i = 0; i < km; ++i) {
-    CircuitPlayground.setPixelColor(i, 0, 255, 0);
-  }
-  int mapping = map(m * 100, 0, 99, 0, 255);
-  CircuitPlayground.setPixelColor(km, mapping, mapping, mapping);
-}
-
-
 
 // Calculate haversine distance for linear distance in km
-
 double haversine(double lat1, double long1, double lat2, double long2)
 {
     double dlong = (long2 - long1) * d2r;
@@ -445,7 +428,7 @@ int measureHeartbeat() {
       if(heartBeat.getCountUntilMinute() >= 15000) continueLoop = false;
     }
   }
-  return heartBeat.getBeatsCounter();
+  return heartBeat.getBeatsCounter() * 4;
 }
 
 
